@@ -1,12 +1,19 @@
 # This should work on Kubernetes deployments that have LoadBalancer support
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: yelb-app
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: redis-server
+  namespace: yelb-app
   labels:
     app: redis-server
     tier: cache
     HS_WORKLOAD_TAG1: yelb
+    app.kubernetes.io/name: yelb-db
 spec:
   type: ClusterIP
   ports:
@@ -19,10 +26,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: yelb-db
+  namespace: yelb-app
   labels:
     app: yelb-db
     tier: backenddb
     HS_WORKLOAD_TAG1: yelb
+    app.kubernetes.io/name: yelb-db
 spec:
   type: ClusterIP
   ports:
@@ -35,10 +44,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: yelb-appserver
+  namespace: yelb-app
   labels:
     app: yelb-appserver
     tier: middletier
     HS_WORKLOAD_TAG1: yelb
+    app.kubernetes.io/name: yelb-db
 spec:
   type: ClusterIP
   ports:
@@ -51,10 +62,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: yelb-ui
+  namespace: yelb-app
   labels:
     app: yelb-ui
     tier: frontend
     HS_WORKLOAD_TAG1: yelb
+    app.kubernetes.io/name: yelb-db
 spec:
   type: LoadBalancer
   ports:
@@ -69,6 +82,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: yelb-ui
+  namespace: yelb-app
 spec:
   replicas: 1
   selector:
@@ -81,6 +95,7 @@ spec:
         app: yelb-ui
         tier: frontend
         HS_WORKLOAD_TAG1: yelb
+        app.kubernetes.io/name: yelb-db
     spec:
       containers:
       - name: yelb-ui-prod
@@ -97,6 +112,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis-server
+  namespace: yelb-app
 spec:
   replicas: 1
   selector:
@@ -109,6 +125,7 @@ spec:
         app: redis-server
         tier: cache
         HS_WORKLOAD_TAG1: yelb
+        app.kubernetes.io/name: yelb-db
     spec:
       containers:
       - name: redis-server-prod
@@ -123,6 +140,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: yelb-db
+  namespace: yelb-app
 spec:
   replicas: 1
   selector:
@@ -135,6 +153,7 @@ spec:
         app: yelb-db
         tier: backenddb
         HS_WORKLOAD_TAG1: yelb
+        app.kubernetes.io/name: yelb-db
     spec:
       containers:
       - name: yelb-db-prod
@@ -149,6 +168,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: yelb-appserver
+  namespace: yelb-app
 spec:
   replicas: 1
   selector:
@@ -161,6 +181,7 @@ spec:
         app: yelb-appserver
         tier: middletier
         HS_WORKLOAD_TAG1: yelb
+        app.kubernetes.io/name: yelb-db
     spec:
       containers:
       - name: yelb-appserver-prod
@@ -170,7 +191,6 @@ spec:
           value: yelb
         ports:
         - containerPort: 4567
-
 
 
 
